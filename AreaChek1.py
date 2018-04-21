@@ -44,9 +44,9 @@ CONTROL_PORT = 9000 #порт XML-RPC управления роботом
 SENSITIVITY = 65
 
 #
-BASE_SPEED = 50
+BASE_SPEED = 35
 
-dirkof = 40 #кэфицент при изменении курса.
+dirkof = 32 #кэфицент при изменении курса.
 
 cameraPos = False #False - смотрим прямо, True - смотрим вниз
 
@@ -83,39 +83,34 @@ class LineFollow(threading.Thread):
         self.debugClient = debugClient
 
     def detectLine(self, frame):
-        #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  #преобразуем в чернобелое
-        #blur = cv2.GaussianBlur(gray, (5, 5), 0)   # размываем изображение blur
-        #ret, thresh = cv2.threshold(blur, self.sensitivity, 255, cv2.THRESH_BINARY_INV)
-        
         img = cv2.remap(frame, self.map1, self.map2, cv2.INTER_LINEAR, cv2.BORDER_CONSTANT)
-        warped = cv2.warpPerspective(img, self.h, (520, 320), cv2.INTER_LINEAR)
-        gray = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
-        frame = gray
-        #gray = cv2.GaussianBlur(gray, (3, 3), 0)
-        _ , thresh = cv2.threshold(gray, self.sensitivity, 255, cv2.THRESH_BINARY_INV)
-        #бинаризация в ч/б (исходное изобр, порог, максимальное знач., тип бинаризации)
-        #_, contours, _ = cv2.findContours(thresh.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE) #нахождение контуров
-        _, contours, _ = cv2.findContours(thresh.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        frame = cv2.warpPerspective(img, self.h, (520, 320), cv2.INTER_LINEAR)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        _ , fthresh = cv2.threshold(gray, self.sensitivity, 255, cv2.THRESH_BINARY_INV)
         direction = 0.0 #курс нашей посудины
-        cx = frame.shape[0] #на случай если не удастся вычислить cx
-        cy = frame.shape[1]
         lineFound = False
-        if contours:   # если есть хоть один контур
-            lineFound = True
-            mainContour = max(contours, key = cv2.contourArea)    # берем максимальный
-            M = cv2.moments(mainContour)  # берем его
-            if M['m00'] != 0:   # если нет деления на ноль
-                cx = int(M['m10']/M['m00'])     # смотрим координаты центра наибольшего черного пятна
-                cy = int(M['m01']/M['m00'])     # они получаются в пикселях кадра
+        h, w = gray.shape[:2]
+        for i in range(5):
+            thresh = fthresh[i*round(h/5):(i+1)*round(h/5), 0:w]
+            _, contours, _ = cv2.findContours(thresh.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            cx = thresh.shape[0] #на случай если не удастся вычислить cx
+            cy = thresh.shape[1]
+            if contours:   # если есть хоть один контур
+                lineFound = True
+                mainContour = max(contours, key = cv2.contourArea)    # берем максимальный
+                M = cv2.moments(mainContour)  # берем его
+                if M['m00'] != 0:   # если нет деления на ноль
+                    cx = int(M['m10']/M['m00'])     # смотрим координаты центра наибольшего черного пятна
+                    cy = int(M['m01']/M['m00'])     # они получаются в пикселях кадра
 
+                    if self.debug:
+                        cv2.line(frame, (cx, cy-30+i*round(h/5)), (cx, cy+30+i*round(h/5)), (255, 0, 0), 1)    # рисуем перекрестье центре контура
+                        cv2.line(frame, (cx-30, cy+i*round(h/5)), (cx+30, cy+i*round(h/5)), (255, 0, 0), 1)
                 if self.debug:
-                    cv2.line(frame, (cx, 0), (cx, frame.shape[0]), (255, 0, 0), 1)    # рисуем перекрестье на контуре
-                    cv2.line(frame, (0, cy), (frame.shape[1], cy), (255, 0, 0), 1)
-            if self.debug:
-                cv2.circle(frame, (cx, cy), 3, (0, 0, 255), -1) #отрисовываем центральную точку
-                cv2.drawContours(frame, mainContour, -1, (0, 255, 0), 2, cv2.FILLED) #отображаем контуры на изображении
-            direction = cx / (frame.shape[0]/2) - 1  # преобразуем координаты от 0 до ширина кадра -> от -1 до 1
-        return lineFound, direction, frame
+                    cv2.circle(frame, (cx, cy+i*round(h/5)), 3, (0, 0, 255), -1) #отрисовываем центральную точку контура 
+                    #cv2.drawContours(frame, mainContour, -1, (0, 255, 0), 2, cv2.FILLED) #отображаем контуры на изображении
+                direction =direction + (cx / (thresh.shape[1]/2) - 1)*(5 - i)  # преобразуем координаты от 0 до ширина кадра -> от -1 до 1
+        return lineFound, direction/5, frame
         
     def run(self):
         global sideCheck
@@ -134,9 +129,9 @@ class LineFollow(threading.Thread):
                     
                     if self.automat:
                         if lineFound: # если линия была обнаружена, задем скорости
-                            MOMENT_BASE_SPEED = BASE_SPEED-int(30.0*math.fabs(direction))
-                            leftSpeed = round(-MOMENT_BASE_SPEED + direction*dirkof)
-                            rightSpeed = round(MOMENT_BASE_SPEED + direction*dirkof)
+                            #MOMENT_BASE_SPEED = BASE_SPEED-int(30.0*math.fabs(direction))
+                            leftSpeed = round(-BASE_SPEED + direction*dirkof)
+                            rightSpeed = round(BASE_SPEED + direction*dirkof)
                             if self.lineLost:
                                 self.lineLost = False
                             self.oldDirection = direction > 0 #запомнили где видели линию
