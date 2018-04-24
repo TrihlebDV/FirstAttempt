@@ -69,7 +69,7 @@ class LineFollow(threading.Thread):
         self.debug = False
         self.sensitivity = 127 #чувствительность алгоритма определения линии (0..255)
         self.width = width
-        if width > WIDTH:
+        if width > WIDTH:     # проверить нужно ли вообще
             self.width = WIDTH
         self.height = height
         if height > HEIGHT:
@@ -83,14 +83,14 @@ class LineFollow(threading.Thread):
         self.debugClient = debugClient
 
     def detectLine(self, frame):
-        img = cv2.remap(frame, self.map1, self.map2, cv2.INTER_LINEAR, cv2.BORDER_CONSTANT)
-        frame = cv2.warpPerspective(img, self.h, (520, 320), cv2.INTER_LINEAR)
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        _ , fthresh = cv2.threshold(gray, self.sensitivity, 255, cv2.THRESH_BINARY_INV)
+        img = cv2.remap(frame, self.map1, self.map2, cv2.INTER_LINEAR, cv2.BORDER_CONSTANT) # устраняем искажения
+        frame = cv2.warpPerspective(img, self.h, (520, 320), cv2.INTER_LINEAR) # переводим изображение в вертикальный вид
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # переход в  оттенки серого
+        _ , fthresh = cv2.threshold(gray, self.sensitivity, 255, cv2.THRESH_BINARY_INV) # градация черного-белого по уровню self.sensitivity
         direction = 0.0 #курс нашей посудины
         lineFound = False
         h, w = gray.shape[:2]
-        for i in range(5):
+        for i in range(5): #для каждой 5-ой по вертикале части изображения определяем центр наибольшего черного пятна 
             thresh = fthresh[i*round(h/5):(i+1)*round(h/5), 0:w]
             _, contours, _ = cv2.findContours(thresh.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             cx = thresh.shape[0] #на случай если не удастся вычислить cx
@@ -135,16 +135,16 @@ class LineFollow(threading.Thread):
                             if self.lineLost:
                                 self.lineLost = False
                             self.oldDirection = direction > 0 #запомнили где видели линию
-                        else:
+                        else:       # при потере линии 
                             if not self.lineLost:
                                 print("LINE LOST")
                                 self.lineLost = True
-                                if self.oldDirection:
+                                if self.oldDirection: # если линии была справа
                                     print("Right")
                                     leftSpeed = round(BASE_SPEED/2)
                                     rightSpeed = round(BASE_SPEED/2)
                                 
-                                else:
+                                else: # если линии была слева
                                     print("Left")
                                     leftSpeed = round(-BASE_SPEED/2)
                                     rightSpeed = round(-BASE_SPEED/2)
@@ -194,16 +194,15 @@ class CpuInfo(threading.Thread):
 def onFrameCallback(frame): #обработчик события 'получен кадр'
     lineFollow.setFrame(frame) #задали новый кадр
 
-def setSpeed(leftSpeed, rightSpeed):
-    if lineFollow.automat:
-        a = lineFollow.speedCount
+def setSpeed(leftSpeed, rightSpeed): # драйверы иногда проседают, поэтому пришлось написать костыль
+    if lineFollow.automat:           #если в автоматическом режиме скорости повторились через семь итераций =>
+        a = lineFollow.speedCount    #то пробуем перезадать скорость подождав пол секунды
         a += 1
         if(a == 7):
             if(lineFollow.checkAutoMode[0] ==  leftSpeed and lineFollow.checkAutoMode[1] == rightSpeed):
                 rightMotor.SetValue(0)
                 leftMotor.SetValue(0)
                 time.sleep(0.5)
-                print("AAA")
             lineFollow.checkAutoMode[0] = leftSpeed
             lineFollow.checkAutoMode[1] = rightSpeed
             a = 0
@@ -219,7 +218,7 @@ def setSpeed(leftSpeed, rightSpeed):
 def initPar():
     D = np.zeros((4))
     K = np.zeros((3, 3))
-    with open("/home/pi/data_for_cam.yaml", 'r') as stream:
+    with open("/home/pi/data_for_cam.yaml", 'r') as stream: # импортируем данные потоком
         a = yaml.load(stream)
     D[0] = a['D0']
     D[1] = a['D1']
@@ -243,16 +242,16 @@ def initPar():
     top_right_dst = a['trd']
     top_left_dst = a['tld']
     
-    pts = np.array([bottom_left,bottom_right,top_right,top_left])
+    pts = np.array([bottom_left,bottom_right,top_right,top_left]) #записываем даные в виде NumPy массивов
     dst_pts = np.array([bottom_left_dst, bottom_right_dst, top_right_dst, top_left_dst])
     pts = np.float32(pts.tolist())
     dst_pts = np.float32(dst_pts.tolist())
-    h, mask = cv2.findHomography(dst_pts, pts)
-    lineFollow.map1, lineFollow.map2 = cv2.fisheye.initUndistortRectifyMap(K, D, np.eye(3), K, RESOLUTION, cv2.CV_16SC2)
+    h, mask = cv2.findHomography(dst_pts, pts) # находим искривление изображения
+    lineFollow.map1, lineFollow.map2 = cv2.fisheye.initUndistortRectifyMap(K, D, np.eye(3), K, RESOLUTION, cv2.CV_16SC2) #прописываем нужные матрицы
     lineFollow.h = h
     print("parametrs are inited")
 
-def changeCameraPos():
+def changeCameraPos(): # изменяет положение камеры 
     global cameraPos
     if cameraPos:
         cameraServo.SetValue(MANUAL_CAMERA_ANGLE)
@@ -262,7 +261,7 @@ def changeCameraPos():
     print("Canged")
     return 0
 
-def changeSens(value):
+def changeSens(value): #изменяет чуствительность алгоритма бинаризации изображения(перевод из серого в черно-белое)
     global SENSITIVITY
     if(value):
         SENSITIVITY += 1
@@ -343,7 +342,9 @@ lineFollow = LineFollow(robotCamStreamer, int(WIDTH/7*4), int(HEIGHT/2), debugCl
 lineFollow.debug = False
 lineFollow.sensitivity = SENSITIVITY
 lineFollow.start()
-#инициализируем параметри из ямла и прогружаем warp
+
+
+#инициализируем параметри из YAML и прогружаем warp
 initPar()
         
 # XML-RPC сервер управления в отдельном потоке
