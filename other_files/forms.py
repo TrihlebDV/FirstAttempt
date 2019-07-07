@@ -11,19 +11,57 @@ from PyQt5.QtCore import Qt, pyqtSignal, QObject, QByteArray, QEvent
 import wait
 import starter_desgn  #This is our converted design file
 import test_form
+import menu
 
-
-class ExampleApp1(QtWidgets.QWidget, starter_desgn.Ui_Dialog):
-    def __init__(self, voidWindow):
+class MainMenu(QtWidgets.QWidget, menu.Ui_Form):
+    def __init__(self, psw, wait, main1, main2, main3):
         #Names and other information you can see in starter_desgn.py file
         super().__init__()
         self.setupUi(self)  #This is necessary to initialize our design
-        self.voidWindow = voidWindow
+        self._wait = wait
+        if (not psw is None) and callable(psw):
+            self._psw = psw #обработчик события получен
+        if (not main1 is None) and callable(main1):
+            self._main1 = main1 #обработчик события получен
+        if (not main2 is None) and callable(main2):
+            self._main3 = main3 #обработчик события получен 
+        if (not main3 is None) and callable(main3):
+            self._main3 = main3 #обработчик события получен 
+        self.pushButton.clicked.connect(self.first_way)
+        self.pushButton_2.clicked.connect(self.second_way)
+        self.pushButton_3.clicked.connect(self.theird_way)
+
+    def first_way(self):
+        self.mt1 = threading.Thread(target=self._main1, args=(self._psw, self._wait))
+        self.daemon = True
+        self.hide()
+        self._wait.show()
+        self.mt1.start()
+
+    def second_way(self):
+        self.mt2 = threading.Thread(target=self._main2, args=(self._psw, self._wait))
+        self.daemon = True
+        self.hide()
+        self.mt2.start()
+
+    def theird_way(self):
+        self.mt3 = threading.Thread(target=self._main3, args=(self._psw, self._wait))
+        self.daemon = True
+        self.hide()
+        self.mt3.start()
+        
+        
+
+class Password(QtWidgets.QWidget, starter_desgn.Ui_Dialog):
+    def __init__(self, menu):
+        #Names and other information you can see in starter_desgn.py file
+        super().__init__()
+        self.setupUi(self)  #This is necessary to initialize our design
+        self._menu = menu
         self.entrButn.clicked.connect(self.pswdNickCheck)
         self.setWindowFlags(Qt.FramelessWindowHint) #nessesary to hide main bar
         self.setGeometry(500, 300, 400, 300)
         
-
     def textSetter(self):
         sleep(2)
         self.nameLine.setPlaceholderText("  write nickname  ")
@@ -37,7 +75,8 @@ class ExampleApp1(QtWidgets.QWidget, starter_desgn.Ui_Dialog):
         if(name == "papaRobot" or pswd == "creator"):
             self.nameLine.setPlaceholderText("  correct")
             self.pswdLine.setPlaceholderText("  correct")
-            self.voidWindow()
+            self.hide()
+            self._menu.show()
             
             
         else:

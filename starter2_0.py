@@ -17,17 +17,21 @@ import threading #library for implementing multithreading
 import forms
 
 #lib for testing
+import second_2
 
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setWindowTitle('MainWindow')
-        self.show_window_1()
+        self.wt = forms.WaitWindow()
+        self.menu = forms.MainMenu(self.show_psw, self.wt, second_2.funcFromClient,
+                                   second_2.funcFromClient, second_2.funcFromClient)
+        self.psw = forms.Password(self.menu)
+        self.psw.show()
 
-    def show_window_1(self):
-        self.w1 = forms.ExampleApp1(self.show_window_2)
-        self.w1.show()
+    def show_psw(self):
+        self.psw.show()
 
     def show_window_2(self):
         self.w1.hide()
