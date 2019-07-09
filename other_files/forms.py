@@ -3,6 +3,7 @@
 
 #necessary libraries
 import threading
+import multiprocessing as mp
 from time import sleep #it's need to control time delay
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import Qt, pyqtSignal, QObject, QByteArray, QEvent
@@ -28,29 +29,20 @@ class MainMenu(QtWidgets.QWidget, menu.Ui_Form):
         if (not main3 is None) and callable(main3):
             self._main3 = main3 #обработчик события получен 
         self.pushButton.clicked.connect(self.first_way)
-        self.pushButton_2.clicked.connect(self.second_way)
-        self.pushButton_3.clicked.connect(self.theird_way)
+        #self.pushButton_2.clicked.connect(self.second_way)
+        #self.pushButton_3.clicked.connect(self.theird_way)
 
     def first_way(self):
-        self.mt1 = threading.Thread(target=self._main1, args=(self._psw, self._wait))
-        self.daemon = True
         self.hide()
         self._wait.show()
-        self.mt1.start()
-
-    def second_way(self):
-        self.mt2 = threading.Thread(target=self._main2, args=(self._psw, self._wait))
-        self.daemon = True
-        self.hide()
-        self.mt2.start()
-
-    def theird_way(self):
-        self.mt3 = threading.Thread(target=self._main3, args=(self._psw, self._wait))
-        self.daemon = True
-        self.hide()
-        self.mt3.start()
-        
-        
+        self._main1(self._psw, self._wait)
+        #mt1 = mp.Process(target=self._main1, args=(self._psw, self._wait))
+        #self.daemon = True
+        #self.hide()
+        #self._wait.show()
+        #mt1.start()
+        #mt1.join()
+        #print("ARR1")
 
 class Password(QtWidgets.QWidget, starter_desgn.Ui_Dialog):
     def __init__(self, menu):

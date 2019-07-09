@@ -5,6 +5,7 @@
 import sys, os
 curdir = os.path.abspath(os.curdir)
 sys.path.insert(0, curdir + '/other_files')
+sys.path.insert(0, curdir + '/wheel_platform')
 
 #import necessary libraries for initiating Qt_object
 from PyQt5 import QtWidgets, QtGui
@@ -17,7 +18,7 @@ import threading #library for implementing multithreading
 import forms
 
 #lib for testing
-import second_2
+import second
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -25,12 +26,14 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__()
         self.setWindowTitle('MainWindow')
         self.wt = forms.WaitWindow()
-        self.menu = forms.MainMenu(self.show_psw, self.wt, second_2.funcFromClient,
-                                   second_2.funcFromClient, second_2.funcFromClient)
+        self.menu = forms.MainMenu(self.show_psw, self.wt, second.start,
+                                   second.start, second.start)
         self.psw = forms.Password(self.menu)
         self.psw.show()
 
     def show_psw(self):
+        self.psw.nameLine.setPlaceholderText("  write nickname  ")
+        self.psw.pswdLine.setPlaceholderText("  write password")
         self.psw.show()
 
     def show_window_2(self):

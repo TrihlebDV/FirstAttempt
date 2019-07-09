@@ -44,6 +44,8 @@ class ExampleApp(QtWidgets.QMainWindow, second_design.Ui_MainWindow):
         self.resiverInit()
         self.robot = xmlrpc.client.ServerProxy('http://%s:%d' % (IP_ROBOT, CONTROL_PORT))
         self.check = True
+        self.psw = None
+        self.psw_check = False
         
 
     def resiverInit(self):
@@ -87,6 +89,7 @@ class ExampleApp(QtWidgets.QMainWindow, second_design.Ui_MainWindow):
             print("stop pipeline")
             self.recv.stop_pipeline()
             self.recv.null_pipeline()
+            if self.psw_check: psw()
             event.accept()
         else:
             event.ignore()
@@ -131,6 +134,22 @@ class ExampleApp(QtWidgets.QMainWindow, second_design.Ui_MainWindow):
                 print("RELEASED")
                 self.check = not self.check
                 e.accept()
+
+    def write_pswd(self, psw):
+        self.psw = psw
+    
+
+
+def start(psw, wait):
+    app = QtWidgets.QApplication(sys.argv)  # Новый экземпляр QApplication
+    window = ExampleApp()  # Создаём объект класса ExampleApp
+    window.text_label.setText(window.mainStr)
+    window.img_laebl.setPixmap(window.img.copy(0, 0, window.w/2 , window.h/2))
+    window.write_pswd(psw)
+    wait.hide()
+    window.show()  # Показываем окно
+    app.exec_()  # и запускаем приложение
+    
                 
 
 def main():
