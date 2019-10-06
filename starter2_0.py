@@ -5,7 +5,7 @@
 import sys, os
 curdir = os.path.abspath(os.curdir)
 sys.path.insert(0, curdir + '/other_files')
-sys.path.insert(0, curdir + '/wheel_platform')
+sys.path.insert(0, curdir + '/wheel_platform/RPi')
 
 #import necessary libraries for initiating Qt_object
 from PyQt5 import QtWidgets, QtGui
