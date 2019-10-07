@@ -27,8 +27,8 @@ class ExampleApp(QtWidgets.QWidget, whl.Ui_Form):
         # и т.д. в файле design.py
         super().__init__()
         self.setupUi(self)  # Это нужно для инициализации нашего дизайна
-        self.img = QtGui.QPixmap("image.jpg")
-        self.img1 = QtGui.QPixmap("test.jpg")
+        self.img = QtGui.QPixmap("test.jpg")
+        self.label_2.setPixmap(self.img)
         self.w, self.h  = QtGui.QPixmap.width(self.img), QtGui.QPixmap.height(self.img)
         self.pushButton.clicked.connect(self.setText)
         self.d_w = 0
@@ -67,10 +67,8 @@ class ExampleApp(QtWidgets.QWidget, whl.Ui_Form):
         self.mainStr = self.mainStr + "\nButton have pressed!"
         self.label.setText(self.mainStr)
         self.e1.set()
-        if self.btncheck:
-            self.label_2.setPixmap(self.img)
-        else:
-            self.label_2.setPixmap(self.img1)
+        self.label_2.setPixmap(self.img)
+
         
 
     def delText(self, time_for_sleep, event_for_wait):
@@ -100,24 +98,24 @@ class ExampleApp(QtWidgets.QWidget, whl.Ui_Form):
                 if e.text() == 'w':
                     self.label.setText("w pressed")
                     print("PRESSED")
-                    _ = self.robot.move('ahead')
+                    #_ = self.robot.move('ahead')
                     self.check = not self.check
                     e.accept()
                 elif e.text() == 'd':
                     self.label.setText("d pressed")
-                    self.robot.move('right')
+                    #self.robot.move('right')
                     print("PRESSED")
                     self.check = not self.check
                     e.accept()
                 elif e.text() == 'a':
                     self.label.setText("a pressed")
-                    self.robot.move('left')
+                    #self.robot.move('left')
                     print("PRESSED")
                     self.check = not self.check
                     e.accept()
                 elif e.text() == 's':
                     self.label.setText("s pressed")
-                    self.robot.move('backward')
+                    #self.robot.move('backward')
                     print("PRESSED")
                     self.check = not self.check
                     e.accept()
@@ -129,7 +127,7 @@ class ExampleApp(QtWidgets.QWidget, whl.Ui_Form):
     def keyReleaseEvent(self, e):
         if e.type() == QEvent.KeyRelease:
             if e.text() in ['w', 'd', 'a' , 's'] and not e.isAutoRepeat():
-                self.robot.move('stop')
+                #self.robot.move('stop')
                 self.label.setText("released")
                 print("RELEASED")
                 self.check = not self.check
@@ -158,7 +156,7 @@ def main():
     app = QtWidgets.QApplication(sys.argv)  # Новый экземпляр QApplication
     window = ExampleApp()  # Создаём объект класса ExampleApp
     window.text_label.setText(window.mainStr)
-    window.img_laebl.setPixmap(window.img.copy(0, 0, window.w/2 , window.h/2))
+    #window.img_laebl.setPixmap(window.img.copy(0, 0, window.w/2 , window.h/2))
     window.show()  # Показываем окно
     app.exec_()  # и запускаем приложение
 
