@@ -6,7 +6,7 @@ Servo srv1;
 Servo srv2;
 
 int pins[8] = {8, 3, 2, 4, 8, 5, 6 , 7};
-int servos[6] = {10, 11, 0, 0, 0, 0};
+int servos[6] = {10, 11, 90, 90};
 
 void motorWrite(int max_speed, int _direction){
     if(max_speed == -1){
@@ -22,26 +22,26 @@ void motorWrite(int max_speed, int _direction){
         case 1:  //ahead
             digitalWrite(pins[2], HIGH);
             digitalWrite(pins[3], LOW);
-            digitalWrite(pins[6], HIGH);
-            digitalWrite(pins[7], LOW);
+            digitalWrite(pins[6], LOW);
+            digitalWrite(pins[7], HIGH);
             break;
         case 2:  //backward
             digitalWrite(pins[2], LOW);
             digitalWrite(pins[3], HIGH);
-            digitalWrite(pins[6], LOW);
-            digitalWrite(pins[7], HIGH);
+            digitalWrite(pins[6], HIGH);
+            digitalWrite(pins[7], LOW);
             break;
         case 3:  //right
             digitalWrite(pins[2], HIGH);
             digitalWrite(pins[3], LOW);
-            digitalWrite(pins[6], LOW);
-            digitalWrite(pins[7], HIGH);
+            digitalWrite(pins[6], HIGH);
+            digitalWrite(pins[7], LOW);
             break;
         case 4:  //left
             digitalWrite(pins[2], LOW);
             digitalWrite(pins[3], HIGH);
-            digitalWrite(pins[6], HIGH);
-            digitalWrite(pins[7], LOW);
+            digitalWrite(pins[6], LOW);
+            digitalWrite(pins[7], HIGH);
             break;
         default:
             break;
@@ -54,6 +54,24 @@ void motorWrite(int max_speed, int _direction){
         }
     }
 }
+void servo(int flag){
+  if(flag == 11){
+    if(servos[2] < 120) servos[2] += 3;
+    srv1.write(servos[2]);
+  }
+  if(flag == 10){
+    if(servos[2] > 20) servos[2] -= 3;
+    srv1.write(servos[2]);
+  }
+  if(flag == 21){
+    if(servos[3] < 120) servos[3] += 3;
+    srv2.write(servos[3]);
+  }
+  if(flag == 20){
+    if(servos[3] > 20) servos[3] -= 3;
+    srv2.write(servos[3]);
+  }
+}
 
 void setup() {
   for(int i = 0; i< 8; i++){
@@ -61,6 +79,12 @@ void setup() {
   }
   pinMode(10, OUTPUT);
   pinMode(11, OUTPUT);  
+
+  srv1.attach(11);
+  srv2.attach(9);
+  srv1.write(90);
+  srv2.write(90);
+  
   Serial.begin(115200);
 }
 
@@ -92,6 +116,26 @@ void loop() {
       case 69:
       {
         motorWrite(-1, 0);
+        break;
+      }
+      case 70:
+      {
+      servo(11);
+      break;
+      }
+      case 71:
+      {
+        servo(10);
+        break;
+      }
+      case 72:
+      {
+      servo(21);
+      break;
+      }
+      case 73:
+      {
+        servo(20);
         break;
       }
     }

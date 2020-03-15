@@ -17,7 +17,7 @@ import cv2
 import xmlrpc.client
 from xmlrpc.server import SimpleXMLRPCServer
 
-IP_ROBOT = '10.42.0.69'
+IP_ROBOT = '10.42.0.154'
 RTP_PORT = 5000
 CONTROL_PORT = 9000
 
@@ -40,7 +40,7 @@ class ExampleApp(QtWidgets.QWidget, whl.Ui_Form):
         self.daemon = True
         self.t1.start()
         self.btncheck = True
-        self.recv = receiver.StreamReceiver(receiver.VIDEO_MJPEG, self.onFrameCallback)
+        self.recv = receiver.StreamReceiver(receiver.VIDEO_H264, self.onFrameCallback)
         self.resiverInit()
         self.robot = xmlrpc.client.ServerProxy('http://%s:%d' % (IP_ROBOT, CONTROL_PORT))
         self.check = True
@@ -98,24 +98,24 @@ class ExampleApp(QtWidgets.QWidget, whl.Ui_Form):
                 if e.text() == 'w':
                     self.label.setText("w pressed")
                     print("PRESSED")
-                    #_ = self.robot.move('ahead')
+                    _ = self.robot.setSpeed('ahead')
                     self.check = not self.check
                     e.accept()
                 elif e.text() == 'd':
                     self.label.setText("d pressed")
-                    #self.robot.move('right')
+                    _ = self.robot.setSpeed('right')
                     print("PRESSED")
                     self.check = not self.check
                     e.accept()
                 elif e.text() == 'a':
                     self.label.setText("a pressed")
-                    #self.robot.move('left')
+                    _ = self.robot.setSpeed('left')
                     print("PRESSED")
                     self.check = not self.check
                     e.accept()
                 elif e.text() == 's':
                     self.label.setText("s pressed")
-                    #self.robot.move('backward')
+                    _ = self.robot.setSpeed('backward')
                     print("PRESSED")
                     self.check = not self.check
                     e.accept()
@@ -127,9 +127,37 @@ class ExampleApp(QtWidgets.QWidget, whl.Ui_Form):
     def keyReleaseEvent(self, e):
         if e.type() == QEvent.KeyRelease:
             if e.text() in ['w', 'd', 'a' , 's'] and not e.isAutoRepeat():
-                #self.robot.move('stop')
+                _ = self.robot.setSpeed('stop')
                 self.label.setText("released")
                 print("RELEASED")
+                self.check = not self.check
+                e.accept()
+                
+            elif e.text() == 'r':
+                self.label.setText("r released")
+                _ = self.robot.setSpeed('1UP')
+                print("PRESSED")
+                self.check = not self.check
+                e.accept()
+                
+            elif e.text() == 't':
+                self.label.setText("t released")
+                _ = self.robot.setSpeed('1DOWN')
+                print("PRESSED")
+                self.check = not self.check
+                e.accept()
+                
+            elif e.text() == 'f':
+                self.label.setText("f released")
+                _ = self.robot.setSpeed('2UP')
+                print("PRESSED")
+                self.check = not self.check
+                e.accept()
+                
+            elif e.text() == 'g':
+                self.label.setText("g released")
+                _ = self.robot.setSpeed('2DOWN')
+                print("PRESSED")
                 self.check = not self.check
                 e.accept()
 

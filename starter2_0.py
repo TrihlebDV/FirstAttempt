@@ -3,7 +3,9 @@
 
 #add path with necessary files to python
 import sys, os
-curdir = os.path.abspath(os.curdir)
+#curdir = os.path.abspath(os.curdir)
+path = os.path.abspath(__file__)
+curdir = os.path.dirname(path)
 sys.path.insert(0, curdir + '/other_files')
 sys.path.insert(0, curdir + '/wheel_platform/RPi')
 

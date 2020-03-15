@@ -64,7 +64,8 @@ class Password(QtWidgets.QWidget, starter_desgn.Ui_Dialog):
         pswd = self.pswdLine.text()
         self.nameLine.setText("")
         self.pswdLine.setText("")
-        if(name == "papaRobot" or pswd == "creator"):
+        #if(name == "papaRobot" or pswd == "creator"):
+        if True:
             self.nameLine.setPlaceholderText("  correct")
             self.pswdLine.setPlaceholderText("  correct")
             self.hide()

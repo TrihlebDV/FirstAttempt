@@ -17,7 +17,7 @@ import cv2
 import xmlrpc.client
 from xmlrpc.server import SimpleXMLRPCServer
 
-IP_ROBOT = '10.42.0.69'
+IP_ROBOT = '10.42.0.154'
 RTP_PORT = 5000
 CONTROL_PORT = 9000
 
@@ -40,7 +40,7 @@ class ExampleApp(QtWidgets.QMainWindow, second_design.Ui_MainWindow):
         self.daemon = True
         self.t1.start()
         self.btncheck = True
-        self.recv = receiver.StreamReceiver(receiver.VIDEO_MJPEG, self.onFrameCallback)
+        self.recv = receiver.StreamReceiver(receiver.VIDEO_H264, self.onFrameCallback)
         self.resiverInit()
         self.robot = xmlrpc.client.ServerProxy('http://%s:%d' % (IP_ROBOT, CONTROL_PORT))
         self.check = True
